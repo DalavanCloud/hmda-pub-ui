@@ -9,6 +9,8 @@ import Report from './Report.jsx'
 import fetchMsas from './fetchMsas.js'
 import { DISCLOSURE_REPORTS } from '../constants/disclosure-reports.js'
 
+import { YearContext } from '../common/YearContext'
+
 import './Disclosure.css'
 
 const detailsCache = {
@@ -109,84 +111,98 @@ class Disclosure extends React.Component {
               institutions, both nationwide and by MSA/MD."
       />
     )
+    return (
+      <YearContext.Consumer>
+        {context => {
+          return this.state.fetched ? (
+            <React.Fragment>
+              <div className="Disclosure">
+                <p>The current year is {context}</p>
+                {header}
+                <ol className="ProgressCards">
+                  <li>
+                    <ProgressCard
+                      title="institution"
+                      name={
+                        params.institutionId
+                          ? institution.name
+                          : 'Select an institution'
+                      }
+                      id={params.institutionId ? institution.respondentId : ''}
+                      link={`/disclosure-reports/${params.year}`}
+                    />
+                  </li>
 
-    return this.state.fetched ? (
-      <React.Fragment>
-        <div className="Disclosure" id="main-content">
-          {header}
-          <ol className="ProgressCards">
-            <li>
-              <ProgressCard
-                title="institution"
-                name={
-                  params.institutionId
-                    ? institution.name
-                    : 'Select an institution'
-                }
-                id={params.institutionId ? institution.respondentId : ''}
-                link={`/disclosure-reports/${params.year}`}
-              />
-            </li>
+                  <li>
+                    <ProgressCard
+                      title="MSA/MD"
+                      name={
+                        params.msaMdId
+                          ? msaMd.name
+                          : params.institutionId
+                          ? 'Select a MSA/MD'
+                          : ''
+                      }
+                      id={params.msaMdId ? msaMd.id : ''}
+                      link={
+                        params.institutionId
+                          ? `/disclosure-reports/${
+                              params.year
+                            }/${institutionId}`
+                          : null
+                      }
+                    />
+                  </li>
 
-            <li>
-              <ProgressCard
-                title="MSA/MD"
-                name={
-                  params.msaMdId
-                    ? msaMd.name
-                    : params.institutionId ? 'Select a MSA/MD' : ''
-                }
-                id={params.msaMdId ? msaMd.id : ''}
-                link={
-                  params.institutionId
-                    ? `/disclosure-reports/${params.year}/${institutionId}`
-                    : null
-                }
-              />
-            </li>
+                  <li>
+                    <ProgressCard
+                      title="report"
+                      name={
+                        params.reportId
+                          ? report.label
+                          : params.msaMdId
+                          ? 'Select a report'
+                          : params.institutionId
+                          ? ''
+                          : ''
+                      }
+                      id={params.reportId ? report.value : ''}
+                      link={
+                        params.msaMdId
+                          ? `/disclosure-reports/${
+                              params.year
+                            }/${institutionId}/${msaMd.id}`
+                          : null
+                      }
+                    />
+                  </li>
+                </ol>
+                <hr />
 
-            <li>
-              <ProgressCard
-                title="report"
-                name={
-                  params.reportId
-                    ? report.label
-                    : params.msaMdId
-                      ? 'Select a report'
-                      : params.institutionId ? '' : ''
-                }
-                id={params.reportId ? report.value : ''}
-                link={
-                  params.msaMdId
-                    ? `/disclosure-reports/${params.year}/${institutionId}/${msaMd.id}`
-                    : null
-                }
-              />
-            </li>
-          </ol>
-          <hr />
+                {params.institutionId ? (
+                  params.msaMdId ? (
+                    params.reportId ? null : (
+                      <Reports {...this.props} />
+                    )
+                  ) : (
+                    <MsaMds
+                      {...this.props}
+                      fetchedMsas={fetchedMsas}
+                      selectorCallback={this.setMsaMd}
+                    />
+                  )
+                ) : (
+                  <SearchList makeListItem={this.makeListItem} />
+                )}
+              </div>
 
-          {params.institutionId ? (
-            params.msaMdId ? (
-              params.reportId ? null : (
-                <Reports {...this.props} />
-              )
-            ) : (
-              <MsaMds
-                {...this.props}
-                fetchedMsas={fetchedMsas}
-                selectorCallback={this.setMsaMd}
-              />
-            )
+              {params.reportId ? <Report {...this.props} /> : null}
+            </React.Fragment>
           ) : (
-            <SearchList makeListItem={this.makeListItem} />
-          )}
-        </div>
-
-        {params.reportId ? <Report {...this.props} /> : null}
-      </React.Fragment>
-    ) : (
-      <LoadingIcon />
+            <LoadingIcon />
+          )
+        }}
+      </YearContext.Consumer>
     )
   }
 }

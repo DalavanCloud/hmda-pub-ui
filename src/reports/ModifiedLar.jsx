@@ -9,9 +9,9 @@ import './ModifiedLar.css'
 const ModifiedLar = () => (
   <YearContext.Consumer>
     {context => {
-      console.log(context)
+      console.log('Modifed LAR', context)
       return (
-        <div className="ModifiedLar" id="main-content">
+        <div className="ModifiedLar">
           <p>The current year is {context}</p>
           <Header
             type={1}
